@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:transportapp/screens/serviceProviders.dart';
 import 'package:transportapp/utils/colors.dart';
 import 'package:transportapp/widgets/text_input.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
@@ -89,6 +90,10 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       _isLoading = false;
     });
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => serviceProvider(),
+    ));
+
   }
 
   @override
@@ -109,8 +114,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   TextFieldInput(
-                    icon: const Icon(
-                                Icons.my_location_outlined ) ,
+                    icon: const Icon(Icons.my_location_outlined),
                     hintText: 'Your Location',
                     textInputType: TextInputType.text,
                     textEditingController: _currentLocationController,
@@ -119,8 +123,7 @@ class _HomePageState extends State<HomePage> {
                     height: 24,
                   ),
                   TextFieldInput(
-                   icon: const Icon(
-                                Icons.location_on_outlined  ) ,
+                    icon: const Icon(Icons.location_on_outlined),
                     hintText: 'Your Destination',
                     textInputType: TextInputType.text,
                     textEditingController: _destinationController,
@@ -153,7 +156,6 @@ class _HomePageState extends State<HomePage> {
                   //LOCATION PICKUP
                   DropDownTextField(
                     controller: _pickUpLocationController,
-                    
                     clearOption: true,
                     enableSearch: true,
                     searchDecoration: const InputDecoration(
@@ -178,7 +180,6 @@ class _HomePageState extends State<HomePage> {
                         width: double.infinity,
                         alignment: Alignment.center,
                         padding: const EdgeInsets.symmetric(vertical: 12),
-                        
                         decoration: const ShapeDecoration(
                             shape: RoundedRectangleBorder(
                                 borderRadius:
