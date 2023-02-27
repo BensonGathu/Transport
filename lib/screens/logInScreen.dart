@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:transportapp/responsive/mobile_screen_layout.dart';
 import 'package:transportapp/screens/homepage.dart';
 import 'package:transportapp/screens/signUpScreen.dart';
 import 'package:transportapp/utils/colors.dart';
@@ -124,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
             onSubmitAnimationCompleted: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => MobileScreenLayout(),
+                builder: (context) => HomePage(),
               ));
             },
             onRecoverPassword: _recoverPassword,

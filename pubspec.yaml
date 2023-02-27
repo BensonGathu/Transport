@@ -29,23 +29,28 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+<<<<<<< HEAD
   badges: ^3.0.2
   cupertino_icons: ^1.0.5
+=======
+  cupertino_icons: ^1.0.2
+>>>>>>> parent of f8cc396 (Providers added)
   dropdown_button2: ^1.9.4
   dropdown_textfield: ^1.0.8
-  expansion_card: ^0.1.0
-  expansion_tile_card: ^2.0.0
   flutter:
     sdk: flutter
   flutter_login: ^4.1.1
   flutter_polyline_points: ^1.0.0
   flutter_svg: ^1.1.6
-  folding_cell: ^1.0.2
   font_awesome_flutter: ^10.4.0
   geolocator: ^9.0.2
+<<<<<<< HEAD
   google_api_headers: ^1.5.0+1
   google_fonts: ^4.0.3
   google_maps_flutter: ^2.2.4
+=======
+  google_maps_flutter: ^2.2.3
+>>>>>>> parent of f8cc396 (Providers added)
   google_maps_flutter_web: ^0.4.0+5
   google_maps_webservice: ^0.0.19
   location: ^4.4.0
@@ -71,7 +76,6 @@ flutter:
     - assets/trans.png
     - assets/icons/google.png
     - assets/icons/facebook.png
-    - assets/SM.jpg
     # - assets/icons/apple.png
     - .env
   # An image asset can refer to one or more resolution-specific "variants", see
