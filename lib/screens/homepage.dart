@@ -9,12 +9,6 @@ import 'package:transportapp/widgets/text_input.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
-class CardItem {
-  final String urlImage;
-  final String title;
-  const CardItem({required this.urlImage, required this.title});
-}
-
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
 
@@ -31,6 +25,12 @@ class _HomePageState extends State<HomePage> {
   late SingleValueDropDownController _timeController;
   late SingleValueDropDownController _pickUpLocationController;
   bool _isLoading = false;
+  late GoogleMapController mapController;
+  void onMapCreated(controller) {
+    setState(() {
+      mapController = controller;
+    });
+  }
 
   List<DropDownValueModel> pickUpList = const [
     DropDownValueModel(name: 'Stage 1', value: "Stage 1"),
@@ -93,7 +93,6 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => serviceProvider(),
     ));
-
   }
 
   @override
