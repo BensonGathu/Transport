@@ -23,7 +23,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   Duration get loginTime => Duration(milliseconds: 2250);
-
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
   //function that will handle google authentication
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Future<bool> _handleGoogleSignIn() async {
@@ -31,7 +32,7 @@ class _LoginScreenState extends State<LoginScreen> {
     print("starting google");
     // Obtain shared preferences.
     final prefs = await SharedPreferences.getInstance();
-print("-------------------------Before");
+    print("-------------------------Before");
     GoogleSignInAccount? googleSignInAccount = await _googleSignIn.signIn();
     print("-------------------------After");
     print(googleSignInAccount);
@@ -39,10 +40,14 @@ print("-------------------------Before");
     if (googleSignInAccount != null) {
       try {
         // Get user
+        print("FILTERING USER----");
         List filtered =
             await Api().filterUserByEmail(googleSignInAccount.email);
-        print("FILTERD USER----");
+        print("FILTERD USERs----");
+        print(filtered);
+
         if (filtered.isNotEmpty) {
+          print("is not empty");
           // Set localStorage
           await setLocalStorage(filtered);
           // Set authenticated as true
@@ -50,14 +55,15 @@ print("-------------------------Before");
         } else {
           // Register user
           var body = {
-            "username": googleSignInAccount.displayName.toString(),
-            "emailaddress": googleSignInAccount.email,
-            "fullName": googleSignInAccount.displayName.toString(),
+            "first_name": googleSignInAccount.displayName.toString(),
+            "last_name": googleSignInAccount.displayName.toString(),
+            "email": googleSignInAccount.email,
             // "nationalid": "0",
-            "password": googleSignInAccount.email,
-            // "phonenumber": "1",
+            "password": googleSignInAccount.email.toString(),
+            "phonenumber": "22",
           };
           print("body");
+          print(body);
 
           await Api().registerUser(body).then((value) async {
             if (value.statusCode == 200) {
@@ -83,8 +89,29 @@ print("-------------------------Before");
         rethrow;
       }
     }
-    print("nullll");
     return isAuthenticated;
+  }
+
+  Future<String> _handleUserLogin() async {
+    bool isAuthenticated = false;
+    var res = "";
+    var body = {
+      "email": _emailController.text,
+      "password": _passwordController.text,
+    };
+
+    await Api().loginUser(body).then((value) async {
+      if (value.statusCode == 200) {
+        // Get user
+        List filtered = await Api().filterUserByEmail(_emailController.text);
+        // Set localStorage
+        await setLocalStorage(filtered);
+        // Set authenticated as true
+        isAuthenticated = true;
+        res = "success";
+      }
+    });
+    return res;
   }
 
   Future<void> setLocalStorage(List data) async {
@@ -104,19 +131,6 @@ print("-------------------------Before");
     }
     return;
   }
-
-  // Future handleGoogleSignIn() async {
-  //   final user = await Api().GoogleSignInApi();
-  //   if (user == null) {
-  //     ScaffoldMessenger.of(context)
-  //         .showSnackBar(SnackBar(content: Text("Sign In Failed")));
-  //   } else {
-  //     print(user);
-  //     Navigator.of(context).pushReplacement(MaterialPageRoute(
-  //       builder: (context) => MobileScreenLayout(),
-  //     ));
-  //   }
-  // }
 
   Future<String?> _authUser(LoginData data) {
     debugPrint('Name: ${data.name}, Password: ${data.password}');
