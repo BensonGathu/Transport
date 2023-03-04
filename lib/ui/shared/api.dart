@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class Api {
-  final String URL = 'http://192.168.1.102:3000';
+  final String URL = 'http://192.168.3.102:3000';
   final String URLVERSION = '/api/v1';
   final String ADDDRIVER = '/addDriver';
   final String LOGINDRIVER = '/loginDriver';
@@ -12,8 +12,10 @@ class Api {
   final String LOGINUSER = '/loginUser';
   final String GETBYEMAIL = '/getByEmail';
 
-  Future<http.Response> registerUser(body) async {
+  Future<http.Response> registerUser(Map body) async {
     late http.Response response;
+     print("reg BODY");
+      print(body);
     try {
       response = await http.post(Uri.parse('$URL$URLVERSION/users/$ADDUSER'),
           body: body);

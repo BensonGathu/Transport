@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,13 +6,8 @@ import 'package:transportapp/screens/serviceProviders.dart';
 import 'package:transportapp/utils/colors.dart';
 import 'package:transportapp/widgets/text_input.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
-import 'package:dropdown_button2/dropdown_button2.dart';
-
-class CardItem {
-  final String urlImage;
-  final String title;
-  const CardItem({required this.urlImage, required this.title});
-}
+import 'package:geocoding/geocoding.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -23,7 +17,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Completer<GoogleMapController> _controller = Completer();
+  final Completer<GoogleMapController> _controller = Completer();
   final TextEditingController _currentLocationController =
       TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
@@ -31,6 +25,10 @@ class _HomePageState extends State<HomePage> {
   late SingleValueDropDownController _timeController;
   late SingleValueDropDownController _pickUpLocationController;
   bool _isLoading = false;
+  String? _currentAddress;
+  Position? _currentPosition;
+  static const LatLng sourceLocation = LatLng(37.33500926, -122.03272188);
+  static const LatLng destination = LatLng(37.33429383, -122.06600055);
 
   List<DropDownValueModel> pickUpList = const [
     DropDownValueModel(name: 'Stage 1', value: "Stage 1"),
@@ -65,8 +63,72 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    _getCurrentPosition();
     _timeController = SingleValueDropDownController();
     _pickUpLocationController = SingleValueDropDownController();
+  }
+
+  //checks if the app ahs permision to access the users location
+  Future<bool> _handleLocationPermission() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location services are disabled. Please enable the services')));
+      return false;
+    }
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied')));
+        return false;
+      }
+    }
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.')));
+      return false;
+    }
+    return true;
+  }
+
+  Future<void> _getCurrentPosition() async {
+    final hasPermission = await _handleLocationPermission();
+    if (!hasPermission) return;
+    await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
+        .then((Position position) {
+      setState(() => _currentPosition = position);
+      // setState(() => sourceLocation = position as LatLng);
+      _getAddressFromLatLng(_currentPosition!);
+      print("Your current location is....");
+      print(position);
+      print(sourceLocation);
+      print("Your current address is....");
+      print(_currentAddress);
+    }).catchError((e) {
+      debugPrint(e);
+    });
+  }
+
+  //transforming longitudes and latitudes to address
+  Future<void> _getAddressFromLatLng(Position position) async {
+    await placemarkFromCoordinates(
+            _currentPosition!.latitude, _currentPosition!.longitude)
+        .then((List<Placemark> placemarks) {
+      Placemark place = placemarks[0];
+      setState(() {
+        _currentAddress =
+            '${place.street}, ${place.subLocality},${place.subAdministrativeArea}, ${place.postalCode}';
+      });
+    }).catchError((e) {
+      debugPrint(e);
+    });
   }
 
   @override
@@ -93,7 +155,6 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => serviceProvider(),
     ));
-
   }
 
   @override
@@ -110,7 +171,12 @@ class _HomePageState extends State<HomePage> {
                     flex: 2,
                     child: SizedBox(
                       height: 200,
-                      child: Text("MAP AREA"),
+                      child: GoogleMap(
+                        initialCameraPosition: CameraPosition(
+                          target: sourceLocation,
+                          zoom: 13.5,
+                        ),
+                      ),
                     ),
                   ),
                   TextFieldInput(
