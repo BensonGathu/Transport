@@ -3,17 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:transportapp/screens/serviceProviders.dart';
 import 'package:transportapp/utils/colors.dart';
 import 'package:transportapp/widgets/text_input.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-
-class CardItem {
-  final String urlImage;
-  final String title;
-  const CardItem({required this.urlImage, required this.title});
-}
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -31,6 +24,12 @@ class _HomePageState extends State<HomePage> {
   late SingleValueDropDownController _timeController;
   late SingleValueDropDownController _pickUpLocationController;
   bool _isLoading = false;
+  late GoogleMapController mapController;
+  void onMapCreated(controller) {
+    setState(() {
+      mapController = controller;
+    });
+  }
 
   List<DropDownValueModel> pickUpList = const [
     DropDownValueModel(name: 'Stage 1', value: "Stage 1"),
@@ -93,7 +92,6 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => serviceProvider(),
     ));
-
   }
 
   @override
@@ -114,7 +112,8 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
                   TextFieldInput(
-                    icon: const Icon(Icons.my_location_outlined),
+                    icon: const Icon(
+                                Icons.my_location_outlined ) ,
                     hintText: 'Your Location',
                     textInputType: TextInputType.text,
                     textEditingController: _currentLocationController,
@@ -123,7 +122,8 @@ class _HomePageState extends State<HomePage> {
                     height: 24,
                   ),
                   TextFieldInput(
-                    icon: const Icon(Icons.location_on_outlined),
+                   icon: const Icon(
+                                Icons.location_on_outlined  ) ,
                     hintText: 'Your Destination',
                     textInputType: TextInputType.text,
                     textEditingController: _destinationController,
@@ -156,6 +156,7 @@ class _HomePageState extends State<HomePage> {
                   //LOCATION PICKUP
                   DropDownTextField(
                     controller: _pickUpLocationController,
+                    
                     clearOption: true,
                     enableSearch: true,
                     searchDecoration: const InputDecoration(
@@ -180,6 +181,7 @@ class _HomePageState extends State<HomePage> {
                         width: double.infinity,
                         alignment: Alignment.center,
                         padding: const EdgeInsets.symmetric(vertical: 12),
+                        
                         decoration: const ShapeDecoration(
                             shape: RoundedRectangleBorder(
                                 borderRadius:
