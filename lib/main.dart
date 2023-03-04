@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:transportapp/responsive/mobile_screen_layout.dart';
 import 'package:transportapp/screens/homepage.dart';
-import 'package:transportapp/screens/mainpage.dart';
 import 'package:transportapp/screens/logInScreen.dart';
 import 'package:responsive_framework/responsive_framework.dart';
-import 'package:transportapp/screens/testmap.dart';
+
+import 'package:transportapp/screens/testMaps.dart';
+
 
 void main() {
   runApp(const MyApp());
@@ -23,7 +24,10 @@ class MyApp extends StatelessWidget {
      
         primarySwatch: Colors.blue,
       ),
-      home:  testMap(),
+
+      // home:  testMap(),
+      home: LoginScreen(),
+
     );
   }
 }

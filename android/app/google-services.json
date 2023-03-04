@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "565030494683",
+    "project_id": "bensons-transport-app",
+    "storage_bucket": "bensons-transport-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:565030494683:android:17b590523f851a225bc7fe",
+        "android_client_info": {
+          "package_name": "com.example.transportapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "565030494683-g2oqj7jdgub5i8vae8cb962060qptl42.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCOZSHEy1yjAyi8bgYVvenlWSZBeGEsbBY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "565030494683-g2oqj7jdgub5i8vae8cb962060qptl42.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

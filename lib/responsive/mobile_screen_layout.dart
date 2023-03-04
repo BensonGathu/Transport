@@ -2,12 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/src/widgets/container.dart';
 import 'package:flutter/src/widgets/framework.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:transportapp/utils/colors.dart';
 import 'package:transportapp/utils/global_variables.dart';
 // import 'package:transportapp/widgets/NavDrawer.dart';
 
-
 class MobileScreenLayout extends StatefulWidget {
+  // final GoogleSignInAccount user;
   const MobileScreenLayout({super.key});
 
   @override
@@ -17,9 +18,7 @@ class MobileScreenLayout extends StatefulWidget {
 class _MobileScreenLayoutState extends State<MobileScreenLayout> {
   int _page = 0;
   late PageController pageController;
-  
 
- 
   @override
   void initState() {
     // TODO: implement initState
