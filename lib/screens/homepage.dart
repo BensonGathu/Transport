@@ -1,7 +1,10 @@
+// ignore_for_file: unnecessary_const
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+//import 'package:location/location.dart';
 import 'package:transportapp/screens/serviceProviders.dart';
 import 'package:transportapp/utils/colors.dart';
 import 'package:transportapp/widgets/text_input.dart';
@@ -18,6 +21,18 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Completer<GoogleMapController> _controller = Completer();
+  //late LatLng sourceLocation = LatLng(37.33500926, -122.03272188);
+  late LatLng destination = LatLng(37.33429383, -122.06600055);
+  //late GoogleMapController _controller;
+  // The camera position
+  late CameraPosition _cameraPosition;
+  // The latitude and longitude variable
+  late LatLng sourceLocation;
+  // late LatLng destination;
+  // Camera markers
+  final Set<Marker> _markers = {};
+  // enable readOnly in input fields
+
   final TextEditingController _currentLocationController =
       TextEditingController();
   final TextEditingController _destinationController = TextEditingController();
@@ -25,10 +40,10 @@ class _HomePageState extends State<HomePage> {
   late SingleValueDropDownController _timeController;
   late SingleValueDropDownController _pickUpLocationController;
   bool _isLoading = false;
+
+  List<LatLng> polylineCoordinates = [];
   String? _currentAddress;
   Position? _currentPosition;
-  static const LatLng sourceLocation = LatLng(37.33500926, -122.03272188);
-  static const LatLng destination = LatLng(37.33429383, -122.06600055);
 
   List<DropDownValueModel> pickUpList = const [
     DropDownValueModel(name: 'Stage 1', value: "Stage 1"),
@@ -62,13 +77,30 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     // TODO: implement initState
-    super.initState();
+    getPolyPoints();
     _getCurrentPosition();
     _timeController = SingleValueDropDownController();
     _pickUpLocationController = SingleValueDropDownController();
+    super.initState();
   }
 
-  //checks if the app ahs permision to access the users location
+  void getPolyPoints() async {
+    PolylinePoints polylinePoints = PolylinePoints();
+    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
+      "AIzaSyA1Hs6Grza62ekFVZnUYSzD97Gwmyqs3Oc", // Your Google Map Key
+      PointLatLng(sourceLocation.latitude, sourceLocation.longitude),
+      PointLatLng(destination.latitude, destination.longitude),
+    );
+    if (result.points.isNotEmpty) {
+      result.points.forEach(
+        (PointLatLng point) => polylineCoordinates.add(
+          LatLng(point.latitude, point.longitude),
+        ),
+      );
+      setState(() {});
+    }
+  }
+
   Future<bool> _handleLocationPermission() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -104,42 +136,36 @@ class _HomePageState extends State<HomePage> {
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((Position position) {
       setState(() => _currentPosition = position);
-      // setState(() => sourceLocation = position as LatLng);
-      _getAddressFromLatLng(_currentPosition!);
-      print("Your current location is....");
-      print(position);
-      print(sourceLocation);
-      print("Your current address is....");
-      print(_currentAddress);
+      sourceLocation = LatLng(double.parse(position.latitude.toString()), double.parse(position.longitude.toString()));
     }).catchError((e) {
       debugPrint(e);
     });
   }
 
-  //transforming longitudes and latitudes to address
-  Future<void> _getAddressFromLatLng(Position position) async {
-    await placemarkFromCoordinates(
-            _currentPosition!.latitude, _currentPosition!.longitude)
-        .then((List<Placemark> placemarks) {
-      Placemark place = placemarks[0];
-      setState(() {
-        _currentAddress =
-            '${place.street}, ${place.subLocality},${place.subAdministrativeArea}, ${place.postalCode}';
-      });
-    }).catchError((e) {
-      debugPrint(e);
-    });
-  }
+  // Future<void> getLocation(String Lat, String Long) async {
+  //   // Get the location
+  //   setState(() {
+  //     // Update controllers
+  //     if (Lat.isNotEmpty && Long.isNotEmpty) {
+  //       sourceLocation = LatLng(double.parse(Lat), double.parse(Long));
+  //     }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    _currentLocationController.dispose();
-    _destinationController.dispose();
-    _timeController.dispose();
-    _pickUpLocationController.dispose();
-  }
+  //     _cameraPosition = CameraPosition(target: sourceLocation, zoom: 19.0);
+  //     // _controller
+  //     //     .animateCamera(CameraUpdate.newCameraPosition(_cameraPosition));
+
+  //     // Set markers
+  //     _markers.add(Marker(
+  //         markerId: const MarkerId('a'),
+  //         draggable: true,
+  //         position: sourceLocation,
+  //         icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+  //         onDragEnd: (currentlatLng) {
+  //           sourceLocation = currentlatLng;
+  //         }));
+  //   });
+  //   return;
+  // }
 
   void searchOperator() async {
     setState(() {
@@ -158,109 +184,154 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    _currentLocationController.dispose();
+    _destinationController.dispose();
+    _timeController.dispose();
+    _pickUpLocationController.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final InputBorder =
         OutlineInputBorder(borderSide: Divider.createBorderSide(context));
     return Scaffold(
         body: SafeArea(
             child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
+                //padding: const EdgeInsets.symmetric(horizontal: 32),
                 width: double.infinity,
                 child: Column(children: [
-                  const Flexible(
-                    flex: 2,
+                  Flexible(
+                    flex: 4,
                     child: SizedBox(
-                      height: 200,
-                      child: GoogleMap(
-                        initialCameraPosition: CameraPosition(
-                          target: sourceLocation,
-                          zoom: 13.5,
-                        ),
-                      ),
+                      height: 320,
+                      child: sourceLocation == null
+                          ? const Center(child: Text("Loading"))
+                          : GoogleMap(
+                              initialCameraPosition: CameraPosition(
+                                target: sourceLocation,
+                                zoom: 13.5,
+                              ),
+                              // markers: _markers,
+                              markers: {
+                                Marker(
+                                  markerId: const MarkerId("currentLocation"),
+                                  position: LatLng(sourceLocation!.latitude!,
+                                      sourceLocation!.longitude!),
+                                ),
+                                Marker(
+                                  markerId: const MarkerId("currentLocation"),
+                                  position: LatLng(destination!.latitude!,
+                                      destination!.longitude!),
+                                ),
+                              },
+                              polylines: {
+                                Polyline(
+                                  polylineId: const PolylineId("route"),
+                                  points: polylineCoordinates,
+                                  color: const Color(0xFF7B61FF),
+                                  width: 6,
+                                ),
+                              },
+                              onMapCreated: (mapController) {
+                                _controller.complete(mapController);
+                              },
+                            ),
                     ),
                   ),
-                  TextFieldInput(
-                    icon: const Icon(Icons.my_location_outlined),
-                    hintText: 'Your Location',
-                    textInputType: TextInputType.text,
-                    textEditingController: _currentLocationController,
-                  ),
-                  const SizedBox(
-                    height: 24,
-                  ),
-                  TextFieldInput(
-                    icon: const Icon(Icons.location_on_outlined),
-                    hintText: 'Your Destination',
-                    textInputType: TextInputType.text,
-                    textEditingController: _destinationController,
-                  ),
-                  const SizedBox(
-                    height: 24,
-                  ),
-                  //TIME PICKER
-                  DropDownTextField(
-                    controller: _timeController,
-                    clearOption: true,
-                    enableSearch: true,
-                    searchDecoration:
-                        const InputDecoration(hintText: "Search travel Time"),
-                    validator: (value) {
-                      if (value == null) {
-                        return "Required field";
-                      } else {
-                        return null;
-                      }
-                    },
-                    dropDownItemCount: timeTravelList.length,
-                    dropDownList: timeTravelList,
-                    onChanged: (val) {},
-                  ),
-                  const SizedBox(
-                    height: 24,
-                  ),
+                  Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 25, vertical: 15),
+                      alignment: Alignment.center,
+                      child: Column(
+                        children: [
+                          TextFieldInput(
+                            icon: const Icon(Icons.my_location_outlined),
+                            hintText: 'Your Location',
+                            textInputType: TextInputType.text,
+                            textEditingController: _currentLocationController,
+                          ),
+                          const SizedBox(
+                            height: 24,
+                          ),
+                          TextFieldInput(
+                            icon: const Icon(Icons.location_on_outlined),
+                            hintText: 'Your Destination',
+                            textInputType: TextInputType.text,
+                            textEditingController: _destinationController,
+                          ),
+                          const SizedBox(
+                            height: 24,
+                          ),
+                          //TIME PICKER
+                          DropDownTextField(
+                            controller: _timeController,
+                            clearOption: true,
+                            enableSearch: true,
+                            searchDecoration: const InputDecoration(
+                                hintText: "Search travel Time"),
+                            validator: (value) {
+                              if (value == null) {
+                                return "Required field";
+                              } else {
+                                return null;
+                              }
+                            },
+                            dropDownItemCount: timeTravelList.length,
+                            dropDownList: timeTravelList,
+                            onChanged: (val) {},
+                          ),
+                          const SizedBox(
+                            height: 24,
+                          ),
 
-                  //LOCATION PICKUP
-                  DropDownTextField(
-                    controller: _pickUpLocationController,
-                    clearOption: true,
-                    enableSearch: true,
-                    searchDecoration: const InputDecoration(
-                        hintText: "Search PickUp Location"),
-                    validator: (value) {
-                      if (value == null) {
-                        return "Required field";
-                      } else {
-                        return null;
-                      }
-                    },
-                    dropDownItemCount: pickUpList.length,
-                    dropDownList: pickUpList,
-                    onChanged: (val) {},
-                  ),
-                  const SizedBox(
-                    height: 24,
-                  ),
-                  InkWell(
-                      onTap: searchOperator,
-                      child: Container(
-                        width: double.infinity,
-                        alignment: Alignment.center,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: const ShapeDecoration(
-                            shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(5))),
-                            color: blueColor),
-                        child: _isLoading
-                            ? const Center(
-                                child: CircularProgressIndicator(
-                                    color: primaryColor),
-                              )
-                            : const Text('Search Operators',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white)),
-                      ))
+                          //LOCATION PICKUP
+                          DropDownTextField(
+                            controller: _pickUpLocationController,
+                            clearOption: true,
+                            enableSearch: true,
+                            searchDecoration: const InputDecoration(
+                                hintText: "Search PickUp Location"),
+                            validator: (value) {
+                              if (value == null) {
+                                return "Required field";
+                              } else {
+                                return null;
+                              }
+                            },
+                            dropDownItemCount: pickUpList.length,
+                            dropDownList: pickUpList,
+                            onChanged: (val) {},
+                          ),
+                          const SizedBox(
+                            height: 24,
+                          ),
+                          InkWell(
+                              onTap: searchOperator,
+                              child: Container(
+                                width: double.infinity,
+                                alignment: Alignment.center,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                decoration: const ShapeDecoration(
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(5))),
+                                    color: blueColor),
+                                child: _isLoading
+                                    ? const Center(
+                                        child: CircularProgressIndicator(
+                                            color: primaryColor),
+                                      )
+                                    : const Text('Search Operators',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white)),
+                              ))
+                        ],
+                      )),
                 ]))));
   }
 }
