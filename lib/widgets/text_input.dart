@@ -6,6 +6,7 @@ class TextFieldInput extends StatelessWidget {
   final String hintText;
   final TextInputType textInputType;
   final Icon icon;
+  final bool enabled;
 
   const TextFieldInput(
       {super.key,
@@ -13,7 +14,8 @@ class TextFieldInput extends StatelessWidget {
       this.isPass = false,
       required this.hintText,
       required this.textInputType,
-      required this.icon});
+      required this.icon,
+      required this.enabled});
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +31,9 @@ class TextFieldInput extends StatelessWidget {
           filled: true,
           contentPadding: const EdgeInsets.all(8),
           labelText: hintText,
-          icon:icon),
-          keyboardType: textInputType,
-          obscureText:  isPass,
-          
-          
-
-          
+          icon: icon),
+      keyboardType: textInputType,
+      obscureText: isPass,
     );
   }
 }

@@ -4,6 +4,8 @@ import 'package:transportapp/screens/homepage.dart';
 import 'package:transportapp/screens/logInScreen.dart';
 import 'package:responsive_framework/responsive_framework.dart';
 
+import 'package:transportapp/screens/testMap2.dart';
+
 import 'package:transportapp/screens/testMaps.dart';
 
 
@@ -25,7 +27,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
 
-      // home:  testMap(),
       home: LoginScreen(),
 
     );

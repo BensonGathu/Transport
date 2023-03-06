@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
             "email": googleSignInAccount.email,
             // "nationalid": "0",
             "password": googleSignInAccount.email.toString(),
-            "phonenumber": "22",
+            "phone_number": googleSignInAccount.email.toString(),
           };
           print("body");
           print(body);

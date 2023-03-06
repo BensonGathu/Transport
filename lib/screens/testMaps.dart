@@ -1,108 +1,61 @@
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:location/location.dart';
 
-class testMap extends StatefulWidget {
-  const testMap({super.key});
+class MapScreen extends StatefulWidget {
+  const MapScreen({super.key});
 
   @override
-  State<testMap> createState() => _testMapState();
+  State<MapScreen> createState() => _MapScreenState();
 }
 
-class _testMapState extends State<testMap> {
-  final Completer<GoogleMapController> _controller = Completer();
-  static const LatLng sourceLocation = LatLng(37.33500926, -122.03272188);
-  static const LatLng destination = LatLng(37.33429383, -122.06600055);
-  LocationData? currentLocation;
-  List<LatLng> polylineCoordinates = [];
-
-  void getCurrentLocation() async {
-    Location location = Location();
-    
-    // location.getLocation().then(
-    //   (location) {
-    //     currentLocation = location;
-    //   },
-    // );
-    // GoogleMapController googleMapController = await _controller.future;
-    // location.onLocationChanged.listen(
-    //   (newLoc) {
-    //     currentLocation = newLoc;
-    //     googleMapController.animateCamera(
-    //       CameraUpdate.newCameraPosition(
-    //         CameraPosition(
-    //           zoom: 13.5,
-    //           target: LatLng(
-    //             newLoc.latitude!,
-    //             newLoc.longitude!,
-    //           ),
-    //         ),
-    //       ),
-    //     );
-    //     setState(() {});
-    //   },
-    // );
-  }
-
-  void getPolyPoints() async {
-    PolylinePoints polylinePoints = PolylinePoints();
-    PolylineResult result = await polylinePoints.getRouteBetweenCoordinates(
-      "AIzaSyA1Hs6Grza62ekFVZnUYSzD97Gwmyqs3Oc", // Your Google Map Key
-      PointLatLng(sourceLocation.latitude, sourceLocation.longitude),
-      PointLatLng(destination.latitude, destination.longitude),
-    );
-    if (result.points.isNotEmpty) {
-      result.points.forEach(
-        (PointLatLng point) => polylineCoordinates.add(
-          LatLng(point.latitude, point.longitude),
-        ),
-      );
-      setState(() {});
-    }
-  }
+class _MapScreenState extends State<MapScreen> {
+  LatLng initialLocation = const LatLng(37.422131, -122.084801);
+  BitmapDescriptor markerIcon = BitmapDescriptor.defaultMarker;
 
   @override
   void initState() {
-// TODO: implement initState
-    getPolyPoints();
-    getCurrentLocation();
+    addCustomIcon();
     super.initState();
+  }
+
+  void addCustomIcon() {
+    BitmapDescriptor.fromAssetImage(
+            const ImageConfiguration(), "assets/Location_marker.png")
+        .then(
+      (icon) {
+        setState(() {
+          markerIcon = icon;
+        });
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: GoogleMap(
-        initialCameraPosition: const CameraPosition(
-          target: sourceLocation,
-          zoom: 13.5,
+        initialCameraPosition: CameraPosition(
+          target: initialLocation,
+          zoom: 14,
         ),
         markers: {
-          const Marker(
-            markerId: MarkerId("source"),
-            position: sourceLocation,
+          Marker(
+            markerId: const MarkerId("marker1"),
+            position: const LatLng(37.422131, -122.084801),
+            draggable: true,
+            onDragEnd: (value) {
+              // value is the new position
+            },
+            icon: markerIcon,
           ),
-          const Marker(
-            markerId: MarkerId("destination"),
-            position: destination,
-          ),
-        },
-        onMapCreated: (mapController) {
-          _controller.complete(mapController);
-        },
-        polylines: {
-          Polyline(
-            polylineId: const PolylineId("route"),
-            points: polylineCoordinates,
-            color: const Color(0xFF7B61FF),
-            width: 6,
+          Marker(
+            markerId: const MarkerId("marker2"),
+            position: const LatLng(37.415768808487435, -122.08440050482749),
           ),
         },
       ),
     );
   }
 }
+
+  
