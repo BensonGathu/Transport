@@ -6,18 +6,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+
 //import 'package:location/location.dart';
 import 'package:transportapp/screens/serviceProviders.dart';
+
 import 'package:transportapp/utils/colors.dart';
 import 'package:transportapp/widgets/text_input.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geocoder/geocoder.dart';
 
+
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 //import 'package:google_places_flutter/google_places_flutter.dart';
 
 const kGoogleApiKey = "AIzaSyA1Hs6Grza62ekFVZnUYSzD97Gwmyqs3Oc";
+
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -47,6 +51,12 @@ class _HomePageState extends State<HomePage> {
   late SingleValueDropDownController _timeController;
   late SingleValueDropDownController _pickUpLocationController;
   bool _isLoading = false;
+  late GoogleMapController mapController;
+  void onMapCreated(controller) {
+    setState(() {
+      mapController = controller;
+    });
+  }
 
   List<LatLng> polylineCoordinates = [];
   String? _currentAddress;
@@ -219,6 +229,7 @@ class _HomePageState extends State<HomePage> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (context) => serviceProvider(),
     ));
+
   }
 
   @override
@@ -229,6 +240,7 @@ class _HomePageState extends State<HomePage> {
     _destinationController.dispose();
     _timeController.dispose();
     _pickUpLocationController.dispose();
+
   }
 
   @override
@@ -279,6 +291,7 @@ class _HomePageState extends State<HomePage> {
                             ),
                     ),
                   ),
+
                   Container(
                       padding: const EdgeInsets.symmetric(
                           horizontal: 25, vertical: 15),
@@ -398,6 +411,94 @@ class _HomePageState extends State<HomePage> {
                               ))
                         ],
                       )),
+
+                  TextFieldInput(
+                    icon: const Icon(
+                                Icons.my_location_outlined ) ,
+                    hintText: 'Your Location',
+                    textInputType: TextInputType.text,
+                    textEditingController: _currentLocationController,
+                  ),
+                  const SizedBox(
+                    height: 24,
+                  ),
+                  TextFieldInput(
+                   icon: const Icon(
+                                Icons.location_on_outlined  ) ,
+                    hintText: 'Your Destination',
+                    textInputType: TextInputType.text,
+                    textEditingController: _destinationController,
+                  ),
+                  const SizedBox(
+                    height: 24,
+                  ),
+                  //TIME PICKER
+                  DropDownTextField(
+                    controller: _timeController,
+                    clearOption: true,
+                    enableSearch: true,
+                    searchDecoration:
+                        const InputDecoration(hintText: "Search travel Time"),
+                    validator: (value) {
+                      if (value == null) {
+                        return "Required field";
+                      } else {
+                        return null;
+                      }
+                    },
+                    dropDownItemCount: timeTravelList.length,
+                    dropDownList: timeTravelList,
+                    onChanged: (val) {},
+                  ),
+                  const SizedBox(
+                    height: 24,
+                  ),
+
+                  //LOCATION PICKUP
+                  DropDownTextField(
+                    controller: _pickUpLocationController,
+                    
+                    clearOption: true,
+                    enableSearch: true,
+                    searchDecoration: const InputDecoration(
+                        hintText: "Search PickUp Location"),
+                    validator: (value) {
+                      if (value == null) {
+                        return "Required field";
+                      } else {
+                        return null;
+                      }
+                    },
+                    dropDownItemCount: pickUpList.length,
+                    dropDownList: pickUpList,
+                    onChanged: (val) {},
+                  ),
+                  const SizedBox(
+                    height: 24,
+                  ),
+                  InkWell(
+                      onTap: searchOperator,
+                      child: Container(
+                        width: double.infinity,
+                        alignment: Alignment.center,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        
+                        decoration: const ShapeDecoration(
+                            shape: RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(5))),
+                            color: blueColor),
+                        child: _isLoading
+                            ? const Center(
+                                child: CircularProgressIndicator(
+                                    color: primaryColor),
+                              )
+                            : const Text('Search Operators',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white)),
+                      ))
+
                 ]))));
   }
 }

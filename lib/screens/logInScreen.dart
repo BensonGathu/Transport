@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:transportapp/responsive/mobile_screen_layout.dart';
 import 'package:transportapp/ui/shared/api.dart';
 import 'package:flutter_login/flutter_login.dart';
@@ -225,7 +226,9 @@ class _LoginScreenState extends State<LoginScreen> {
             ],
             onSubmitAnimationCompleted: () {
               Navigator.of(context).pushReplacement(MaterialPageRoute(
+
                 builder: (context) => const MobileScreenLayout(),
+
               ));
             },
             onRecoverPassword: _recoverPassword,
