@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class Api {
-  final String URL = 'http://192.168.3.102:3000';
+  final String URL = 'http://192.168.0.14:3000';
   final String URLVERSION = '/api/v1';
   final String ADDDRIVER = '/addDriver';
   final String LOGINDRIVER = '/loginDriver';
@@ -14,14 +14,17 @@ class Api {
 
   Future<http.Response> registerUser(Map body) async {
     late http.Response response;
-     print("reg BODY");
-      print(body);
+
+    print(body);
+    print('-----------------------------');
+    var bodyData = json.encode(body);
+    print(bodyData);
     try {
-      response = await http.post(Uri.parse('$URL$URLVERSION/users/$ADDUSER'),
-          body: body);
-      print("reg BODY");
-      print(body);
-      
+      response = await http.post(Uri.parse('$URL$URLVERSION/users$ADDUSER'),
+          headers: {"Content-Type": "application/json"}, body: bodyData);
+
+      print("reg BODY2");
+      print(bodyData);
     } catch (error) {
       rethrow;
     }
@@ -42,9 +45,10 @@ class Api {
 
   Future<http.Response> loginUser(Map body) async {
     late http.Response response;
+    var bodyData = json.encode(body);
     try {
       response = await http.post(Uri.parse('$URL$URLVERSION/users$LOGINUSER'),
-          body: body);
+          headers: {"Content-Type": "application/json"}, body: bodyData);
     } catch (error) {
       rethrow;
     }

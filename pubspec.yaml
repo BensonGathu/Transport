@@ -30,6 +30,7 @@ environment:
 # versions available, run `flutter pub outdated`.
 dependencies:
   badges: ^3.0.2
+  configurable_expansion_tile: ^1.0.0
   cupertino_icons: ^1.0.2
   dropdown_button2: ^1.9.4
   dropdown_textfield: ^1.0.8
@@ -37,18 +38,23 @@ dependencies:
   expansion_tile_card: ^2.0.0
   flutter:
     sdk: flutter
+  flutter_google_places: ^0.3.0
   flutter_login: ^4.1.1
   flutter_polyline_points: ^1.0.0
   flutter_svg: ^1.1.6
+  # flutter_typeahead: ^4.3.7
   folding_cell: ^1.0.2
   font_awesome_flutter: ^10.4.0
+  geocoder: ^0.2.1
   geocoding: ^2.0.5
   geolocator: ^9.0.2
+  get: ^4.6.5
   google_fonts: ^4.0.3
-  google_maps_flutter: ^2.2.3
+  google_maps_flutter: ^2.2.5
   google_maps_flutter_web: ^0.4.0+5
   google_sign_in: ^5.4.2
   google_sign_in_web_redirect: ^0.0.1
+  http: ^0.13.5
   local_auth: ^2.1.5
   location: ^4.4.0
   permission_handler: ^10.2.0

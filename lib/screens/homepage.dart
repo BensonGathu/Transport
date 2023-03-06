@@ -1,7 +1,9 @@
 // ignore_for_file: unnecessary_const
 
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_google_places/flutter_google_places.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 //import 'package:location/location.dart';
@@ -10,7 +12,12 @@ import 'package:transportapp/utils/colors.dart';
 import 'package:transportapp/widgets/text_input.dart';
 import 'package:dropdown_textfield/dropdown_textfield.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:geocoder/geocoder.dart';
+
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+//import 'package:google_places_flutter/google_places_flutter.dart';
+
+const kGoogleApiKey = "AIzaSyA1Hs6Grza62ekFVZnUYSzD97Gwmyqs3Oc";
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -44,6 +51,25 @@ class _HomePageState extends State<HomePage> {
   List<LatLng> polylineCoordinates = [];
   String? _currentAddress;
   Position? _currentPosition;
+  Placemark _pickPlaceMark = Placemark();
+  Placemark get pickPlaceMark => _pickPlaceMark;
+
+  //  List<Prediction> _predictionList = [];
+  // Future<List<Prediction>> searchLocation(
+  //     BuildContext context, String text) async {
+  //   if (text != null && text.isNotEmpty) {
+  //     http.Response response = await getLocationData(text);
+  //     var data = jsonDecode(response.body.toString());
+  //     print("my status is " + data['status']);
+  //     if (data['status'] == 'ok') {
+  //       _predictionList = [];
+  //       data['prediction'].forEach(prediction)=>_predictionList.add(Prediction.fromJson(prediction));
+  //     }else{
+
+  //     }
+  //   }
+  //   return _predictionList;
+  // }
 
   List<DropDownValueModel> pickUpList = const [
     DropDownValueModel(name: 'Stage 1', value: "Stage 1"),
@@ -134,9 +160,21 @@ class _HomePageState extends State<HomePage> {
     final hasPermission = await _handleLocationPermission();
     if (!hasPermission) return;
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
-        .then((Position position) {
+        .then((Position position) async {
       setState(() => _currentPosition = position);
-      sourceLocation = LatLng(double.parse(position.latitude.toString()), double.parse(position.longitude.toString()));
+      sourceLocation = LatLng(double.parse(position.latitude.toString()),
+          double.parse(position.longitude.toString()));
+      final coordinates = Coordinates(position.latitude, position.longitude);
+
+      var addresses =
+          await Geocoder.local.findAddressesFromCoordinates(coordinates);
+      var first = addresses.first;
+      print("my address");
+      print(
+          ' ${first.locality}, ${first.adminArea},${first.subLocality}, ${first.subAdminArea},${first.addressLine}, ${first.featureName},${first.thoroughfare}, ${first.subThoroughfare}');
+      setState(() {
+        _currentLocationController.text = first.addressLine.toString();
+      });
     }).catchError((e) {
       debugPrint(e);
     });
@@ -247,18 +285,36 @@ class _HomePageState extends State<HomePage> {
                       alignment: Alignment.center,
                       child: Column(
                         children: [
-                          TextFieldInput(
-                            icon: const Icon(Icons.my_location_outlined),
-                            hintText: 'Your Location',
-                            textInputType: TextInputType.text,
-                            textEditingController: _currentLocationController,
+                          TextField(
+                            controller: _currentLocationController,
+                            decoration: InputDecoration(
+                                hintText: 'Your Location',
+                                border: InputBorder,
+                                focusedBorder: InputBorder,
+                                enabledBorder: InputBorder,
+                                filled: true,
+                                contentPadding: const EdgeInsets.all(8),
+                                labelText: 'Your Location',
+                                icon: const Icon(Icons.my_location_outlined)),
+                            keyboardType: TextInputType.text,
+                            obscureText: false,
+                            enabled: false,
                           ),
+                          // TextFieldInput(
+
+                          //   icon: const Icon(Icons.my_location_outlined),
+                          //   hintText: 'Your Location',
+                          //   textInputType: TextInputType.text,
+                          //   enabled: false,
+                          //   textEditingController: _currentLocationController,
+                          // ),
                           const SizedBox(
                             height: 24,
                           ),
                           TextFieldInput(
                             icon: const Icon(Icons.location_on_outlined),
                             hintText: 'Your Destination',
+                            enabled: true,
                             textInputType: TextInputType.text,
                             textEditingController: _destinationController,
                           ),
@@ -288,6 +344,15 @@ class _HomePageState extends State<HomePage> {
                           ),
 
                           //LOCATION PICKUP
+//                           DropdownButton<String>(
+//   items: <String>['A', 'B', 'C', 'D'].map((String value) {
+//     return DropdownMenuItem<String>(
+//       value: value,
+//       child: Text(value),
+//     );
+//   }).toList(),
+//   onChanged: (_) {},
+// ),
                           DropDownTextField(
                             controller: _pickUpLocationController,
                             clearOption: true,
@@ -311,7 +376,8 @@ class _HomePageState extends State<HomePage> {
                           InkWell(
                               onTap: searchOperator,
                               child: Container(
-                                width: double.infinity,
+                                width: 170,
+                                //width: double.infinity,
                                 alignment: Alignment.center,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 12),
