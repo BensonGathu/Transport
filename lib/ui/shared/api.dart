@@ -25,6 +25,7 @@ class Api {
 
       print("reg BODY2");
       print(bodyData);
+      print(response.body);
     } catch (error) {
       rethrow;
     }
@@ -53,5 +54,26 @@ class Api {
       rethrow;
     }
     return response;
+  }
+
+
+  Future<String> getUserToken(String id) async {
+    String token = "";
+    var response =
+        await http.get(Uri.parse('$URL$URLVERSION/users/token/$id'));
+    if (response.statusCode == 200) {
+      token = json.decode(response.body)["token"];
+    }
+    return token;
+  }
+
+    Future<String> getDriverToken(String id) async {
+    String token = "";
+    var response =
+        await http.get(Uri.parse('$URL$URLVERSION/drivers/token/$id'));
+    if (response.statusCode == 200) {
+      token = json.decode(response.body)["token"];
+    }
+    return token;
   }
 }

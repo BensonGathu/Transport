@@ -91,6 +91,10 @@ flutter:
     - assets/SM.jpg
     - assets/Location_marker.png
 
+    - assets/register.png
+    - assets/login.png
+    - assets/google_logo.png
+
     # - assets/icons/apple.png
     - .env
   # An image asset can refer to one or more resolution-specific "variants", see
