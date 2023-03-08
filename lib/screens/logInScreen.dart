@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:transportapp/responsive/mobile_screen_layout.dart';
 import 'package:transportapp/screens/signUpScreen.dart';
 import 'package:transportapp/ui/shared/api.dart';
@@ -240,6 +241,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         home: Container(
           decoration: const BoxDecoration(
+
             image: DecorationImage(
                 image: AssetImage('assets/login.png'), fit: BoxFit.cover),
           ),
@@ -406,6 +408,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ],
             ),
+
           ),
         )
 
