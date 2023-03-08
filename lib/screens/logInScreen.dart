@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:transportapp/responsive/mobile_screen_layout.dart';
+import 'package:transportapp/screens/signUpScreen.dart';
 import 'package:transportapp/ui/shared/api.dart';
 import 'package:flutter_login/flutter_login.dart';
 import 'package:responsive_framework/responsive_framework.dart';
@@ -22,12 +23,17 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  Duration get loginTime => Duration(milliseconds: 2250);
+  Duration get loginTime => const Duration(milliseconds: 2250);
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   //function that will handle google authentication
+
+  late bool showHome = false;
+  late bool isValidUser = false;
+
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   Future<bool> _handleGoogleSignIn() async {
+    print("isAuthenticated False");
     bool isAuthenticated = false;
     print("starting google");
     // Obtain shared preferences.
@@ -52,6 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
           await setLocalStorage(filtered);
           // Set authenticated as true
           isAuthenticated = true;
+          print("isAuthenticated True");
         } else {
           // Register user
           var body = {
@@ -65,7 +72,9 @@ class _LoginScreenState extends State<LoginScreen> {
           print("body");
           print(body);
 
-          await Api().registerUser(body).then((value) async {
+           Api().registerUser(body).then((value) async {
+            print(value.body);
+            print(value);
             if (value.statusCode == 200) {
               // Get user
               List filtered =
@@ -74,9 +83,12 @@ class _LoginScreenState extends State<LoginScreen> {
               await setLocalStorage(filtered);
               // Set authenticated as true
               isAuthenticated = true;
+              print("isAuthenticated True");
             } else {
               // Signout user
               isAuthenticated = false;
+              print("isAuthenticated False");
+
               await _googleSignIn.signOut();
               throw 'An error occured';
             }
@@ -86,10 +98,25 @@ class _LoginScreenState extends State<LoginScreen> {
         // Signout user
         await _googleSignIn.signOut();
         isAuthenticated = false;
+        print("isAuthenticated False");
+
         rethrow;
       }
     }
+    print("returned isAuthenticared");
     return isAuthenticated;
+  }
+
+
+
+
+
+
+
+
+  myHome() async {
+    final prefs = await SharedPreferences.getInstance();
+    showHome = prefs.getBool('showHome') ?? false;
   }
 
   Future<String> _handleUserLogin() async {
@@ -114,20 +141,31 @@ class _LoginScreenState extends State<LoginScreen> {
     return res;
   }
 
+  Future hasAccount() async {
+    final prefs = await SharedPreferences.getInstance();
+    var email = prefs.getString('email');
+    var userId = prefs.getString('userid');
+
+    if (email != null && userId != null) {
+      isValidUser = true;
+    }
+  }
+
   Future<void> setLocalStorage(List data) async {
     // Obtain shared preferences.
     final prefs = await SharedPreferences.getInstance();
     for (var v in data) {
       // Generate token
-      // var token = await Api().getToken(v['id']);
+      var token = await Api().getUserToken(v['_id']);
       // Set Local storage
-      prefs.setString('email', v['emailaddress']);
-      prefs.setString('fullName', v['fullName']);
-      // prefs.setString('token', token);
-      prefs.setString('phone', v['phonenumber']);
-      prefs.setString('id', v['id']);
-      prefs.setString('userid', v['userid']);
-      prefs.setString('nationalid', v['nationalid']);
+      prefs.setString('email', v['email']);
+      prefs.setString('first_name', v['first_name']);
+      prefs.setString('last_name', v['last_name']);
+      prefs.setString('token', token);
+      prefs.setString('phone_number', v['phone_number']);
+      prefs.setString('_id', v['_id']);
+      prefs.setString('userid', v['userID']);
+      //prefs.setString('nationalid', v['nationalid']);
     }
     return;
   }
@@ -163,6 +201,13 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    hasAccount();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
         builder: (context, child) => ResponsiveWrapper.builder(child,
@@ -170,11 +215,11 @@ class _LoginScreenState extends State<LoginScreen> {
             minWidth: 480,
             defaultScale: true,
             breakpoints: [
-              ResponsiveBreakpoint.resize(480, name: MOBILE),
-              ResponsiveBreakpoint.autoScale(800, name: TABLET),
-              ResponsiveBreakpoint.resize(1000, name: DESKTOP),
+              const ResponsiveBreakpoint.resize(480, name: MOBILE),
+              const ResponsiveBreakpoint.autoScale(800, name: TABLET),
+              const ResponsiveBreakpoint.resize(1000, name: DESKTOP),
             ],
-            background: Container(color: Color(0xFFF5F5F5))),
+            background: Container(color: const Color(0xFFF5F5F5))),
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.blue,
@@ -195,41 +240,219 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         home: Container(
           decoration: const BoxDecoration(
-              image: DecorationImage(
-                  image: AssetImage('assets/trans.png'), fit: BoxFit.cover)),
-          child: FlutterLogin(
-            // title: 'Transport ',
-            logo: const AssetImage('assets/trans.png'),
-
-            onLogin: _authUser,
-            onSignup: _signupUser,
-
-            loginProviders: <LoginProvider>[
-              LoginProvider(
-                icon: FontAwesomeIcons.google,
-                label: 'Google',
-                callback: () async {
-                  _handleGoogleSignIn();
-                },
-              ),
-              LoginProvider(
-                icon: FontAwesomeIcons.facebookF,
-                label: 'Facebook',
-                callback: () async {
-                  debugPrint('start facebook sign in');
-                  await Future.delayed(loginTime);
-                  debugPrint('stop facebook sign in');
-                  return null;
-                },
-              ),
-            ],
-            onSubmitAnimationCompleted: () {
-              Navigator.of(context).pushReplacement(MaterialPageRoute(
-                builder: (context) => const MobileScreenLayout(),
-              ));
-            },
-            onRecoverPassword: _recoverPassword,
+            image: DecorationImage(
+                image: AssetImage('assets/login.png'), fit: BoxFit.cover),
           ),
-        ));
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Stack(
+              children: [
+                Container(),
+                Container(
+                  padding: const EdgeInsets.only(left: 35, top: 130),
+                  child: const Text(
+                    'Welcome\nBack',
+                    style: TextStyle(color: Colors.white, fontSize: 33),
+                  ),
+                ),
+                SingleChildScrollView(
+                  child: Container(
+                    padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).size.height * 0.5),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          margin: const EdgeInsets.only(left: 35, right: 35),
+                          child: Column(
+                            children: [
+                              TextField(
+                                style: const TextStyle(color: Colors.black),
+                                decoration: InputDecoration(
+                                    fillColor: Colors.grey.shade100,
+                                    filled: true,
+                                    hintText: "Email",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    )),
+                              ),
+                              const SizedBox(
+                                height: 30,
+                              ),
+                              TextField(
+                                style: const TextStyle(),
+                                obscureText: true,
+                                decoration: InputDecoration(
+                                    fillColor: Colors.grey.shade100,
+                                    filled: true,
+                                    hintText: "Password",
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    )),
+                              ),
+                              const SizedBox(
+                                height: 40,
+                              ),
+                              MaterialButton(
+                                elevation: 0,
+                                //color: Color.fromARGB(255, 235, 232, 229),
+                                height: 50,
+                                minWidth: 200,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                onPressed: ()  {
+                                  print("Before vvvvvvvvvvvv");
+                                  _handleGoogleSignIn().then((v) {
+                                    print(
+                                        "VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV");
+                                    print(v);
+                                    Navigator.of(context)
+                                        .pushReplacement(MaterialPageRoute(
+                                      builder: (context) =>
+                                          const MobileScreenLayout(),
+                                    ));
+                                  }).catchError((error) {
+                                    // error is SecondError
+                                    print("OUR ERROR: $error");
+                                  });
+                                },
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: const <Widget>[
+                                    Image(
+                                      image:
+                                          AssetImage("assets/icons/google.png"),
+                                      height: 35.0,
+                                    ),
+                                    Padding(
+                                      padding: EdgeInsets.only(left: 10),
+                                      child: Text(
+                                        'Sign in with Google',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          color: Colors.black54,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  // const Text(
+                                  //   'Sign in',
+                                  //   style: TextStyle(
+                                  //       fontSize: 27,
+                                  //       fontWeight: FontWeight.w700),
+                                  // ),
+                                  CircleAvatar(
+                                    radius: 30,
+                                    backgroundColor: const Color(0xff4c505b),
+                                    child: IconButton(
+                                        color: Colors.white,
+                                        onPressed: () {},
+                                        icon: const Icon(
+                                          Icons.arrow_forward,
+                                        )),
+                                  )
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 40,
+                              ),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context)
+                                          .pushReplacement(MaterialPageRoute(
+                                        builder: (context) =>
+                                            const signUpScreen(),
+                                      ));
+                                    },
+                                    style: const ButtonStyle(),
+                                    child: const Text(
+                                      'Sign Up',
+                                      textAlign: TextAlign.left,
+                                      style: TextStyle(
+                                          decoration: TextDecoration.underline,
+                                          color: Color(0xff4c505b),
+                                          fontSize: 18),
+                                    ),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {},
+                                      child: const Text(
+                                        'Forgot Password',
+                                        style: TextStyle(
+                                          decoration: TextDecoration.underline,
+                                          color: Color(0xff4c505b),
+                                          fontSize: 18,
+                                        ),
+                                      )),
+                                ],
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+
+        // Container(
+        //   decoration: const BoxDecoration(
+        //       image: DecorationImage(
+        //           image: AssetImage('assets/trans.png'), fit: BoxFit.cover)),
+        //   child:
+        //   FlutterLogin(
+        //     additionalSignupFields: const <UserFormField>[],
+        //     // title: 'Transport ',
+        //     logo: const AssetImage('assets/trans.png'),
+
+        //     onLogin: _authUser,
+        //     onSignup: _signupUser,
+
+        //     loginProviders: <LoginProvider>[
+        //       LoginProvider(
+        //           icon: FontAwesomeIcons.google,
+        //           label: 'Google',
+        //           callback: () async {
+        //             bool isAuthenticated = await _handleGoogleSignIn();
+        //             if (isAuthenticated) {
+        //               return null;
+        //             }
+        //             return null;
+
+        //           }),
+        //       LoginProvider(
+        //         icon: FontAwesomeIcons.facebookF,
+        //         label: 'Facebook',
+        //         callback: () async {
+        //           debugPrint('start facebook sign in');
+        //           await Future.delayed(loginTime);
+        //           debugPrint('stop facebook sign in');
+        //           return null;
+        //         },
+        //       ),
+        //     ],
+        //     onSubmitAnimationCompleted: () {
+        //       Navigator.of(context).pushReplacement(MaterialPageRoute(
+        //         builder: (context) => const MobileScreenLayout(),
+        //       ));
+        //     },
+        //     onRecoverPassword: _recoverPassword,
+        //   ),
+        // )
+        );
   }
 }
